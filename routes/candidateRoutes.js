@@ -51,7 +51,7 @@ router.put('/:candidateID',jwtauthmiddleware,async(req,res)=>{
         const candidateId=req.params.candidateID;
         const upadateCandidateData=req.body; 
 
-        const response= await Person.findByIdAndUpdate(candidateID,upadateCandidateData,{
+        const response= await Candidate.findByIdAndUpdate(candidateId,upadateCandidateData,{
              new:true,
              runValidators:true
         })
@@ -72,7 +72,7 @@ router.delete('/:candidateID',jwtauthmiddleware,async(req,res)=>{
             return res.status(500).json({error:'user is not an admin'});
         }
         const candidateId=req.params.candidateID;
-        const response= await Person.findByIdAndDelete(candidateId);
+        const response= await Candidate.findByIdAndDelete(candidateId);
 
         if(!response){
             return res.status(404).json({error:"Candidate Not FOund"})
@@ -84,6 +84,55 @@ router.delete('/:candidateID',jwtauthmiddleware,async(req,res)=>{
         res.status(500).json({error:"Internal server error"});
     }
 })
+router.post('/vote/:candidateID',jwtauthmiddleware,async(req,res)=>{
+    candidateId=req.params.candidateID;
+    userId=req.user.id;
+    try{
+        const candidate=await Candidate.findById(candidateId);
+        if(!candidate){
+            return res.status(404).json({error:"candidate not found"});
+        }
+        const user=await User.findById(userId);
+        if(!user){
+            return res.status(404).json({error:"user not found"});
+        }
+        if(user.isVoted){
+            res.status(404).json({error:"you have already voted"});
+        }
+        if(user.role==='admin'){
+            res.status(403).json({error:"admin is not allowed"});
+        }
 
+        candidate.votes.push({user:userId});
+        candidate.voteCount++;
+        await candidate.save();
+
+        user.isVoted=true;
+        await user.save();
+
+        res.status(200).json({message:"vote recorded successfully"});
+    }catch(err){
+        console.log(err);
+        return res.status(404).json({error:"internal server error"});
+    }
+})
+
+router.get('/vote/count',async(req,res)=>{
+    try{
+        const candidate=await Candidate.find().sort({voteCount:'desc'});
+
+        const voteRecord=candidate.map((data)=>{
+            return {
+                party:data.party,
+                count:data.voteCount
+            }
+        });
+        return res.status(200).json(voteRecord);
+
+    }catch(err){
+        console.log(err);
+        return res.status(404).json({error:"internal server error"});
+    }
+})
 
 module.exports=router;
