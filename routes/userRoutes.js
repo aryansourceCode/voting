@@ -7,7 +7,7 @@ const User=require('./../models/user');
 const { error } = require('console');
 const path=require("path");
 const { uploadToCloudinary } = require('../cloudinary');
-const redirectIfAuthenticated=require('../redirect')
+
 
 router.post('/signup', upload.single('f_image'), async (req, res) => {
     try {
