@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .login-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            margin-bottom: 1.5rem;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .login-container .links {
+            margin-top: 1rem;
+        }
+
+        .login-container .links a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .login-container .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+        <form id="login-form">
+            <input type="number" placeholder="Aadhar Number" name="aadharCardNumber" required>
+            <input type="password" placeholder="Password" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div class="links">
+            <a href="#">Forgot Password? (Note: This is not working right now, coming soon)</a><br>
+            <a href="http://localhost:4000/changepassword"><button>Change Password</button></a>
+            <a href="http://localhost:4000/signup">Sign Up</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const aadharCardNumber = event.target.aadharCardNumber.value;
+            const password = event.target.password.value;
+
+            try {
+                const response = await fetch('http://localhost:4000/user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ aadharCardNumber, password })
+                });//after checking
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token); //setting token to localstorage
+                    alert('Login successful!');
+                    window.location.href = 'http://localhost:4000/afterlogin';
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+
+        window.history.forward(); 
+        function noBack() { ///to prevent going back to home screen
+            window.history.forward(); 
+        } 
+
+        //preventBack(); // Call preventBack on page load
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Vote</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 300px;
+            max-width: 100%;                                   
+            text-align: center;
+        }
+        .card img {
+            width: 100%;
+            height: auto;
+        }
+        .card-content {
+            padding: 16px;
+        }
+        .card-content h2 {  
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .card-content p {
+            color: #777;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    
+   <center><h1>You Have Voted To</h1></center> 
+    <div class="container">
+        <div class="card" id="candidate-card">
+            <!-- Card content will be dynamically inserted here -->
+            <p>Loading candidate information...</p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('token');//fetching token in frontend from browser
+
+            if (!token) {
+                document.getElementById('candidate-card').innerHTML = '<p>Token not found. Please log in again.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/candidate/yourvotes', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });//sending fethedd token
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch candidate data');
+                }
+
+                const data = await response.json();
+                //console.log('Response:', data); // Log the response data
+                console.log(data.candidate.isvoted);//logic 
+                if (data) {
+                    const card = document.getElementById('candidate-card');
+                    card.innerHTML = `
+                        <img src="${data.candidate.image}" alt="${data.candidate.name}">
+                        <div class="card-content">
+                           
+                            <h2>${data.candidate.name}</h2>
+                            <p>Party: ${data.candidate.party}</p>
+                            <p>Constituency: ${data.candidate.constituency}</p>
+                            <p>Age: ${data.candidate.age}</p>
+                            <p>Gender: ${data.candidate.gender}</p>
+                        </div>
+                    `;
+                } 
+            } catch (error) {
+                console.error('Error fetching candidate data:', error);
+                document.getElementById('candidate-card').innerHTML = '<p>you have not voted.</p>';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Voting Results</h1>
+    <br>
+    <h3>Total Number Of Votes: <%= totalVotes %></h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Party</th>
+                <th>Total Votes</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% results.forEach(result => { %>
+                <tr>
+                    <td><%= result._id %></td>
+                    <td><%= result.totalVotes %></td>
+                    <td><%= result.percentage.toFixed(2) %> %</td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</body>
+</html>

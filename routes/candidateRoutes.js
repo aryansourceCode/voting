@@ -1,9 +1,9 @@
-const express=require('express');
-const{jwtauthmiddleware,generatetoken}=require('./../jwt')
-const router=express.Router();
-const User=require('./../models/user');
-const { error } = require('console');
-const Candidate=require('./../models/candidate');
+const express = require('express');
+const { jwtauthmiddleware, generatetoken } = require('./../jwt');
+const router = express.Router();
+const User = require('./../models/user');
+const Candidate = require('./../models/candidate');
+const path = require("path");
 
 const checkAdminRole = async (userID) => {
     try {
@@ -43,96 +43,232 @@ router.post('/', jwtauthmiddleware, async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
-router.put('/:candidateID',jwtauthmiddleware,async(req,res)=>{
-    try{
-        if(!checkAdminRole(req.user.id)){
-            return res.status(500).json({error:'user is not an admin'});
-        }
-        const candidateId=req.params.candidateID;
-        const upadateCandidateData=req.body; 
 
-        const response= await Candidate.findByIdAndUpdate(candidateId,upadateCandidateData,{
-             new:true,
-             runValidators:true
-        })
-        if(!response){
-            return res.status(404).json({error:"Candidate Not FOund"})
+router.put('/:candidateID', jwtauthmiddleware, async (req, res) => {
+    try {
+        if (!(await checkAdminRole(req.user.id))) {
+            return res.status(500).json({ error: 'user is not an admin' });
+        }
+        const candidateId = req.params.candidateID;
+        const updateCandidateData = req.body;
+
+        const response = await Candidate.findByIdAndUpdate(candidateId, updateCandidateData, {
+            new: true,
+            runValidators: true
+        });
+        if (!response) {
+            return res.status(404).json({ error: "Candidate Not Found" });
         }
         console.log("candidate data updated");
         res.status(200).json(response);
-    }catch(err){
+    } catch (err) {
         console.log(err);
-        res.status(500).json({error:"Internal server error"});
+        res.status(500).json({ error: "Internal server error" });
     }
-})
+});
 
-router.delete('/:candidateID',jwtauthmiddleware,async(req,res)=>{
-    try{
-        if(!checkAdminRole(req.user.id)){
-            return res.status(500).json({error:'user is not an admin'});
+router.delete('/:candidateID', jwtauthmiddleware, async (req, res) => {
+    try {
+        if (!(await checkAdminRole(req.user.id))) {
+            return res.status(500).json({ error: 'user is not an admin' });
         }
-        const candidateId=req.params.candidateID;
-        const response= await Candidate.findByIdAndDelete(candidateId);
+        const candidateId = req.params.candidateID;
+        const response = await Candidate.findByIdAndDelete(candidateId);
 
-        if(!response){
-            return res.status(404).json({error:"Candidate Not FOund"})
+        if (!response) {
+            return res.status(404).json({ error: "Candidate Not Found" });
         }
         console.log("candidate deleted");
         res.status(200).json(response);
-    }catch(err){
+    } catch (err) {
         console.log(err);
-        res.status(500).json({error:"Internal server error"});
+        res.status(500).json({ error: "Internal server error" });
     }
-})
-router.post('/vote/:candidateID',jwtauthmiddleware,async(req,res)=>{
-    candidateId=req.params.candidateID;
-    userId=req.user.id;
-    try{
-        const candidate=await Candidate.findById(candidateId);
-        if(!candidate){
-            return res.status(404).json({error:"candidate not found"});
+});
+
+router.post('/vote/:candidateID', jwtauthmiddleware, async (req, res) => {
+    const candidateId = req.params.candidateID;
+    const userId = req.user.id;
+    try {
+        const candidate = await Candidate.findById(candidateId);
+        if (!candidate) {
+            return res.status(404).json({ error: "candidate not found" });
         }
-        const user=await User.findById(userId);
-        if(!user){
-            return res.status(404).json({error:"user not found"});
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "user not found" });
         }
-        if(user.isVoted){
-            res.status(404).json({error:"you have already voted"});
+        if (user.isVoted) {
+            return res.status(404).json({ error: "you have already voted" });
         }
-        if(user.role==='admin'){
-            res.status(403).json({error:"admin is not allowed"});
+        if (user.role === 'admin') {
+            return res.status(403).json({ error: "admin is not allowed" });
         }
 
-        candidate.votes.push({user:userId});
+        candidate.votes.push({ user: userId });
         candidate.voteCount++;
         await candidate.save();
+        user.votedto=candidateId;
 
-        user.isVoted=true;
+        user.isVoted = true;
         await user.save();
 
-        res.status(200).json({message:"vote recorded successfully"});
-    }catch(err){
+        res.status(200).json({ message: "vote recorded successfully" });
+    } catch (err) {
         console.log(err);
-        return res.status(404).json({error:"internal server error"});
+        return res.status(404).json({ error: "internal server error" });
     }
-})
+});
 
-router.get('/vote/count',async(req,res)=>{
-    try{
-        const candidate=await Candidate.find().sort({voteCount:'desc'});
+router.get('/vote/count', async (req, res) => {
+    try {
+        const candidate = await Candidate.find().sort({ voteCount: 'desc' });
 
-        const voteRecord=candidate.map((data)=>{
+        const voteRecord = candidate.map((data) => {
             return {
-                party:data.party,
-                count:data.voteCount
-            }
+                party: data.party,
+                count: data.voteCount
+            };
         });
         return res.status(200).json(voteRecord);
 
-    }catch(err){
+    } catch (err) {
         console.log(err);
-        return res.status(404).json({error:"internal server error"});
+        return res.status(404).json({ error: "internal server error" });
+    }
+});
+
+router.get('/candidates', async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 50;
+    const searchQuery = req.query.search || '';
+    const startIndex = (page - 1) * limit;
+
+    try {
+        // Create a search criteria
+        const searchCriteria = searchQuery ? {
+            $or: [
+                { name: { $regex: searchQuery, $options: 'i' } },//i for checking case sensitive
+                { constituency: { $regex: searchQuery, $options: 'i' } },
+                { party: { $regex: searchQuery, $options: 'i' } },
+                { state: { $regex: searchQuery, $options: 'i' } }
+            ]
+        } : {};
+
+        const totalCandidates = await Candidate.countDocuments(searchCriteria);
+        const totalPages = Math.ceil(totalCandidates / limit);
+        const candi = await Candidate.find(searchCriteria).skip(startIndex).limit(limit);//pagination
+
+        res.render('candidateslist', {//sending data from backend
+            candi,
+            currentPage: page,
+            totalPages,
+            searchQuery
+        });
+        
+    } catch (err) {
+        console.log(err);
+        return res.status(404).json({ error: "internal server error" });
+    }
+});
+router.get('/candi', async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 50;
+    const searchQuery = req.query.search || '';
+    const startIndex = (page - 1) * limit;
+
+    try {
+        // Create a search criteria
+        const searchCriteria = searchQuery ? {
+            $or: [
+                { name: { $regex: searchQuery, $options: 'i' } },
+                { constituency: { $regex: searchQuery, $options: 'i' } },
+                { party: { $regex: searchQuery, $options: 'i' } },
+                { state: { $regex: searchQuery, $options: 'i' } }
+            ]
+        } : {};
+
+        const totalCandidates = await Candidate.countDocuments(searchCriteria);
+        const totalPages = Math.ceil(totalCandidates / limit);
+        const candi = await Candidate.find(searchCriteria).skip(startIndex).limit(limit);
+
+        res.render('candi',{
+            candi,
+            currentPage: page,
+            totalPages,
+            searchQuery
+        })
+       
+        
+    } catch (err) {
+        console.log(err);
+        return res.status(404).json({ error: "internal server error" });
+    }
+});
+
+router.get('/results', async (req, res) => {
+    try {
+        // Aggregate total vote counts
+        const totalVotesResult = await Candidate.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalVotes: { $sum: "$voteCount" }
+                }
+            }
+        ]);
+
+        const totalVotes = totalVotesResult[0]?.totalVotes || 0;
+
+        // Aggregate vote counts by party, calculate percentage, and sort in descending order
+        const results = await Candidate.aggregate([
+            {
+                $group: {
+                    _id: "$party",
+                    totalVotes: { $sum: "$voteCount" },
+                    allvotes:{$sum:"$voteCount"}
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    totalVotes: 1,
+                    percentage: { $cond: { if: { $eq: [totalVotes, 0] }, then: 0, else: { $multiply: [{ $divide: ["$totalVotes", totalVotes] }, 100] } } }
+                }
+            },
+            {
+                $sort: { totalVotes: -1 } // Sort by totalVotes in descending order
+            }
+        ]);
+
+        res.render('results', { results,totalVotes });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+router.get('/yourvotes',jwtauthmiddleware,async(req,res)=>{
+    try{
+    const userId = req.user.id;
+    const c=await User.findById(userId);
+    console.log(c.votedto);
+    if(c.isVoted){
+        const candidate = await Candidate.findById(c.votedto);
+    //console.log(candidate);
+        res.status(200).json({candidate});
+
+    }
+    else{
+        res.status(500).error({message:"not voted"});
+    }
+    
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({ error: 'Internal server error' });
+
     }
 })
 
-module.exports=router;
+
+module.exports = router;

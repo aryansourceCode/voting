@@ -34,9 +34,16 @@ const userSchema= new mongoose.Schema({
         enum:["voter","admin"],
         default:"voter"
     },
+    f_image:{
+        type:String,
+       
+    },
     isVoted:{
         type:Boolean,
         default:false
+    },
+    votedto:{
+        type:String,
     }
 
 })

@@ -1,17 +1,48 @@
 const mongoose = require('mongoose');
 
 const candidateSchema= new mongoose.Schema({
+    state:{
+        type:String
+    },
+    constituency:{
+        type:String
+    },
     name:{
         type: String,
         required:true
     },
+
     party:{
         type:String,
-        required:true
+    },
+    symbol:{
+        type:String,
+    },
+    gender:{
+        type:String,
+    },
+    criminalcases:{
+        type:String,
     },
     age:{
         type:Number,
         required:true
+    },
+    category:{
+        type:String
+    },
+    education:{
+        type:String
+    },
+    assests:{
+        type:String
+    },
+    liabilities:{
+
+        type:String
+    },
+    image:{
+        type:String
     },
     votes:[
         {

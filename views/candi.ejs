@@ -1,0 +1,139 @@
+
+<html>
+<head>
+  <title>Candidate List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      width: 90%;
+      margin: 50px auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin: 20px;
+      padding: 20px;
+      width: 250px;
+      text-align: center;
+    }
+    .card img {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 15px;
+    }
+    .card h2 {
+      margin: 10px 0;
+      font-size: 1.5em;
+      color: #333;
+    }
+    .card p {
+      margin: 5px 0;
+      color: #777;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .pagination a {
+      margin: 0 5px;
+      padding: 10px 15px;
+      background: #333;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    .pagination a.disabled {
+      background: #bbb;
+      pointer-events: none;
+    }
+    .pagination a.active {
+      background: #4CAF50;
+      pointer-events: none;
+    }
+    .search-box {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .search-box input[type="text"] {
+      padding: 10px;
+      width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .search-box button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .vo{
+      background-color: #4CAF50;
+      color: aliceblue;
+
+    }
+  </style>
+</head>
+<body>
+  <center><h1>CANDIDATES LIST</h1></center>
+  <div class="search-box">
+    <form action="/candidate/candi" method="get">
+      <input type="text" name="search" placeholder="Search by name, constituency, etc." value="<%= searchQuery %>">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+  <div class="container">
+    <% if (candi && candi.length) { %>
+      <% candi.forEach(user => { %>
+        <div class="card">
+          <img src="<%= user.image %>" alt="Profile Picture">
+          <h2><%= user.name %></h2>
+          <p><strong>Party:</strong> <%= user.party %></p>
+          <p><strong>State:</strong> <%= user.state %></p>
+          <p><strong>Constituency:</strong> <%= user.constituency %></p>
+          <p><strong>Party symbol:</strong> <%= user.symbol %></p>
+          <p><strong>Gender:</strong> <%= user.gender %></p>
+          <p><strong>Age:</strong> <%= user.age %></p>
+          <p><strong>Criminal Cases:</strong> <%= user.criminalcases %></p>
+          <p><strong>Category:</strong> <%= user.category %></p>
+          <p><strong>Education:</strong> <%= user.education %></p>
+          <p><strong>Assests:</strong> <%= user.assests %></p>
+          <p><strong>Liabilities:</strong> <%= user.liabilities%></p>
+
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p>No candidates found.</p>
+    <% } %>
+  </div>
+  <div class="pagination">
+    <% if (currentPage > 1) { %>
+      <a href="/candidate/candi?page=<%= currentPage - 1 %>&search=<%= searchQuery %>">&laquo; Previous</a>
+    <% } else { %>
+      <a class="disabled">&laquo; Previous</a>
+    <% } %>
+    <a href="#" class="active"><%= currentPage %></a>
+    <% if (currentPage < totalPages) { %>
+      <a href="/candidate/candi?page=<%= currentPage + 1 %>&search=<%= searchQuery %>">Next &raquo;</a>
+    <% } else { %>
+      <a class="disabled">Next &raquo;</a>
+    <% } %>
+  </div>
+
+  <script>
+   
+  </script>
+</body>
+</html>

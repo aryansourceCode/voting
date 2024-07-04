@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Profile</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      width: 80%;
+      margin: 50px auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .profile img {
+      border-radius: 50%;
+      margin-bottom: 20px;
+    }
+    .profile-data {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .profile-data div {
+      padding: 10px 0;
+      border-bottom: 1px solid #ddd;
+      width: 100%;
+    }
+    .profile-data div:last-child {
+      border-bottom: none;
+    }
+    .profile-data div label {
+      font-weight: bold;
+      margin-right: 10px;
+      color: #555;
+    }
+    .profile-data div span {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>User Profile</h1>
+    <div class="profile">
+      <img id="profile-pic" src="" alt="Profile Picture" width="150" height="150">
+      <div class="profile-data" id="profile-data">
+        <!-- User profile data will be displayed here -->
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {//as document is loaded
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await fetch('/user/profile', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const result = await response.json();
+          if (response.ok) {
+            const user = result.user;
+            const profileDataContainer = document.getElementById('profile-data');
+            
+            if (user.f_image) {
+              document.getElementById('profile-pic').src = user.f_image;
+            }
+
+            const fields = [
+              { label: 'Name', value: user.name },
+              { label: 'Age', value: user.age },
+              { label: 'Email', value: user.email },
+              { label: 'Mobile', value: user.mobile },
+              { label: 'Address', value: user.address },
+              { label: 'Aadhar Card Number', value: user.aadharCardNumber},
+            
+              // Add more fields as necessary
+            ];
+
+            fields.forEach(field => {
+              const div = document.createElement('div');
+              const label = document.createElement('label');
+              label.textContent = field.label;
+              const span = document.createElement('span');
+              span.textContent = field.value;
+              div.appendChild(label);
+              div.appendChild(span);
+              profileDataContainer.appendChild(div);
+            });
+
+          } else {
+            document.getElementById('profile-data').textContent = result.error;
+          }
+        } catch (error) {
+          document.getElementById('profile-data').textContent = 'Error fetching profile data';
+        }
+      } else {
+        document.getElementById('profile-data').textContent = 'No token found';
+      }
+    });
+  </script>
+</body>
+</html>

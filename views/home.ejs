@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Online Voting System</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #4CAF50;
+            padding: 1rem;
+            color: white;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #333;
+        }
+        nav a {
+            padding: 1rem;
+            color: white;
+            text-decoration: none;
+        }
+        nav a:hover {
+            background-color: #575757;
+        }
+        .hero {
+            background: url('voting.jpg') no-repeat center center/cover;
+            height: 50vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin: 0;
+        }
+        .hero p {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+        .hero button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            color: #4CAF50;
+            background-color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .hero button:hover {
+            background-color: #ddd;
+        }
+        .features, .how-it-works, .security,.phone {
+            padding: 2rem;
+            text-align: center;
+        }
+        .features h2, .how-it-works h2, .security h2,.phone h2{
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .features p, .how-it-works p, .security p,.phone p {
+            font-size: 1rem;
+            color: #333;
+        }
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        .cent{
+            color:#333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Online Voting System</h1>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#features">About</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="http://localhost:4000/candidate/candidates">Cast Your Vote</a>
+        <a href="http://localhost:4000/candidate/results">Results</a>
+        <a href="http://localhost:4000/candidate/candi">View Your Candidates</a>
+       
+        <a href="#phone">Contact</a>
+        <a href="http://localhost:4000/login">Login</a>
+        <a href="http://localhost:4000/signup">Sign Up</a>
+    </nav>
+    <div class="hero">
+        <div class="cent">
+            <h1>Welcome to the Online Voting System</h1>
+            <p>Your vote counts! Participate in the democratic process.</p>
+            <button onclick="location.href='http://localhost:4000/login'">Get Started</button>
+        </div>
+    </div>
+    <div id="features" class="features">
+        <h2>Features</h2>
+        <p>Secure, fast, and reliable online voting system.</p>
+        <p>24/7 Access from anywhere.</p>
+        <p>Real-time vote counting and results.</p>
+    </div>
+    <div id="how-it-works" class="how-it-works">
+        <h2>How It Works</h2>
+        <p>Register and verify your identity.</p>
+        <p>Cast your vote securely online.</p>
+        <p>Track and confirm your vote.</p>
+    </div>
+    <div class="security">
+        <h2>Security</h2>
+        <p>It uses bcrypt for passowrd hashing</p>
+        <p>Jwt token authentication for voter verification.</p>
+        <p>Regular security audits and updates.</p>
+    </div>
+    <div class="phone" id="phone">
+        <h2>Contact</h2>
+        <strong>Email:</strong><p>aryansri666@gmail.com</p></span>
+        
+        <span><strong>Phone:</strong><p>9335524827</p></span>
+        <span><strong></strong><p>9335524827</p></span>
+    </div>
+    <footer>
+        <p>&copy; 2024 Online Voting System | <a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a></p>
+    </footer>
+</body>
+</html>
