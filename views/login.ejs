@@ -81,44 +81,76 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
     <script>
         document.getElementById('login-form').addEventListener('submit', async function (event) {
-            event.preventDefault();
+    event.preventDefault();
 
-            const aadharCardNumber = event.target.aadharCardNumber.value;
-            const password = event.target.password.value;
+    const aadharCardNumber = event.target.aadharCardNumber.value;
+    const password = event.target.password.value;
 
-            try {
-                const response = await fetch('/user/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ aadharCardNumber, password })
-                });//after checking
-
-                if (response.ok) {
-                    const data = await response.json();
-                    localStorage.setItem('token', data.token); //setting token to localstorage
-                    alert('Login successful!');
-                    window.location.href = '/afterlogin';
-                } else {
-                    const errorData = await response.json();
-                    alert(errorData.error);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            }
+    try {
+        const response = await fetch('/user/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ aadharCardNumber, password })
         });
 
-        window.history.forward(); 
-        function noBack() { ///to prevent going back to home screen
-            window.history.forward(); 
-        } 
+        if (response.ok) {
+            const data = await response.json();
+            const token = data.token;
+            console.log("Received token:", token);  // Check if the token is received
+            
+            // Check if the token is formatted correctly
+            if (!token || token.split('.').length !== 3) {
+                console.error("Invalid JWT format.");
+                alert("Invalid token format received.");
+                return;
+            }
 
-        //preventBack(); // Call preventBack on page load
+            localStorage.setItem('token', token);
+
+            // Decode the JWT token to check for admin role
+            const payloadBase64 = token.split('.')[1];
+            console.log("Payload Base64:", payloadBase64);  // Log the encoded payload part
+            
+            try {
+                const payload = JSON.parse(atob(payloadBase64));
+                console.log("Decoded Payload:", payload);  // Log the decoded payload
+
+                // Check for the role attribute
+                if (payload && payload.role) {
+                    console.log("User Role:", payload.role);  // Log the role
+                    if (payload.role === 'admin') {
+                        alert('Welcome Admin!');
+                        window.location.href = '/adminpage';
+                    } else {
+                        alert('Login successful!');
+                        window.location.href = '/afterlogin';
+                    }
+                } else {
+                    console.error("Role not found in payload.");
+                    alert("Role information missing in token.");
+                }
+            } catch (decodeError) {
+                console.error("Error decoding token payload:", decodeError);
+                alert("Failed to decode token payload.");
+            }
+        } else {
+            const errorData = await response.json();
+            console.log("Login error:", errorData.error);  // Log any errors from the response
+            alert(errorData.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+});
+
     </script>
+    
 </body>
 
 </html>

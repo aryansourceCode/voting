@@ -2,8 +2,12 @@ const express = require('express');
 const { jwtauthmiddleware, generatetoken } = require('./../jwt');
 const router = express.Router();
 const User = require('./../models/user');
+const app=express();
 const Candidate = require('./../models/candidate');
 const path = require("path");
+const { uploadToCloudinary } = require('../cloudinary');
+const upload=require('../multer');
+const { error } = require('console');
 
 const checkAdminRole = async (userID) => {
     try {
@@ -25,41 +29,84 @@ const checkAdminRole = async (userID) => {
         return false; // Handle any errors by considering as non-admin
     }
 };
-
-router.post('/', jwtauthmiddleware, async (req, res) => {
+router.post('/addcandidate', upload.single('f_image'), jwtauthmiddleware, async (req, res) => {
     try {
+        // Check if user is an admin
         if (!(await checkAdminRole(req.user.id))) {
             return res.status(403).json({ message: "User is not an admin" });
         }
 
         const data = req.body;
+
+        // Upload the file to Cloudinary
+        console.log("file",req.file);
+        const cloudinaryResponse = await uploadToCloudinary(req.file.path);
+        console.log('Cloudinary response:', cloudinaryResponse);
+
+        if (cloudinaryResponse) {
+            data.f_image = cloudinaryResponse.secure_url; // Set the image URL
+        } else {
+            console.error('Cloudinary upload failed, response:', cloudinaryResponse);
+            return res.status(500).json({ error: 'Failed to upload image to Cloudinary' });
+        }
+
+        console.log('Candidate data before saving:', data);  // Log the candidate data
+
         const newCandidate = new Candidate(data);
         const response = await newCandidate.save();
 
-        console.log('Candidate data saved');
+        console.log('Candidate data saved:', response);
         res.status(200).json({ response });
     } catch (err) {
-        console.error('Error saving candidate:', err);
+        console.error('Error saving candidate:', err); // Logs the error details
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-router.put('/:candidateID', jwtauthmiddleware, async (req, res) => {
+
+router.put('/update/:candidateID',upload.single('f_image'), jwtauthmiddleware, async (req, res) => {
     try {
         if (!(await checkAdminRole(req.user.id))) {
-            return res.status(500).json({ error: 'user is not an admin' });
+            return res.status(403).json({ error: 'User is not an admin' });
         }
+
         const candidateId = req.params.candidateID;
         const updateCandidateData = req.body;
+        const uploadedFile = req.file;
 
-        const response = await Candidate.findByIdAndUpdate(candidateId, updateCandidateData, {
+        // Find the existing candidate data
+        const existingCandidate = await Candidate.findById(candidateId);
+        if (!existingCandidate) {
+            return res.status(404).json({ error: "Candidate Not Found" });
+        }
+
+        // Merge updates with existing data
+        const updatedData = {
+            state: updateCandidateData.state || existingCandidate.state,
+            constituency: updateCandidateData.constituency || existingCandidate.constituency,
+            name: updateCandidateData.name || existingCandidate.name,
+            party: updateCandidateData.party || existingCandidate.party,
+            symbol: updateCandidateData.symbol || existingCandidate.symbol,
+            gender: updateCandidateData.gender || existingCandidate.gender,
+            criminalcases: updateCandidateData.criminalcases || existingCandidate.criminalcases,
+            age: updateCandidateData.age || existingCandidate.age,
+            category: updateCandidateData.category || existingCandidate.category,
+            education: updateCandidateData.education || existingCandidate.education,
+            assets: updateCandidateData.assets || existingCandidate.assets,
+            liabilities: updateCandidateData.liabilities || existingCandidate.liabilities,
+            image: uploadedFile ? uploadedFile.path : existingCandidate.image
+        };
+
+        const response = await Candidate.findByIdAndUpdate(candidateId, updatedData, {
             new: true,
             runValidators: true
         });
+
         if (!response) {
             return res.status(404).json({ error: "Candidate Not Found" });
         }
-        console.log("candidate data updated");
+
+        console.log("Candidate data updated");
         res.status(200).json(response);
     } catch (err) {
         console.log(err);
@@ -67,7 +114,7 @@ router.put('/:candidateID', jwtauthmiddleware, async (req, res) => {
     }
 });
 
-router.delete('/:candidateID', jwtauthmiddleware, async (req, res) => {
+router.delete('/delete/:candidateID', jwtauthmiddleware, async (req, res) => {
     try {
         if (!(await checkAdminRole(req.user.id))) {
             return res.status(500).json({ error: 'user is not an admin' });

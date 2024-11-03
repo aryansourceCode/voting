@@ -34,7 +34,9 @@ app.get('/profile-page', (req, res) => {
 app.get('/afterlogin',(req,res)=>{
     res.render('afterlogin.ejs');
 })
-
+app.get('/adminpage',(req,res)=>{
+    res.render("adminpage.ejs");
+})
 app.get("/changepassword",(req,res)=>{
     res.render("changepassword.ejs");
 })

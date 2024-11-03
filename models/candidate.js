@@ -41,7 +41,7 @@ const candidateSchema= new mongoose.Schema({
 
         type:String
     },
-    image:{
+    f_image:{
         type:String
     },
     votes:[

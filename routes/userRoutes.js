@@ -39,7 +39,8 @@ router.post('/signup', upload.single('f_image'), async (req, res) => {
         res.render("login.ejs");
 
         const payload = {
-            id: response.id
+            id: response.id,
+            role:response.role
         };
         const token = generatetoken(payload);
 
@@ -86,7 +87,8 @@ router.post('/login',async(req,res)=>{
             return res.status(401).json({error:'Invalid username or password'});
         }
         const payload={
-            id:user.id
+            id:user.id,
+            role:user.role
         }
         
         const token=generatetoken(payload);

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Management</title>
+    <style>
+        /* Add your styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e9ecef;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 2rem 0;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            color: #343a40;
+            margin-bottom: 1rem;
+        }
+
+        .action-button {
+            margin: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            color: #ffffff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover {
+            background-color: #0056b3;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        form input, form select, form textarea, form button {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        form button {
+            background-color: #007bff;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        .logout-button {
+            background-color: #dc3545;
+            margin-top: 1rem;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Candidate Management</h1>
+
+    <!-- Action Buttons -->
+    <div class="container">
+        <button class="action-button" onclick="showForm('add')">Add Candidate</button>
+        <button class="action-button" onclick="showForm('update')">Update Candidate</button>
+        <button class="action-button" onclick="showForm('delete')">Delete Candidate</button>
+        <button class="action-button logout-button" id="logout-button">Logout</button>
+    </div>
+
+    <!-- Add Candidate Form -->
+    <div class="container form-container" id="add-form">
+        <h2>Add Candidate</h2>
+        <form id="add-candidate-form" enctype="multipart/form-data" method="post" action="/candidate/addcandidate">
+            <input type="text" name="state" placeholder="State" required>
+            <input type="text" name="constituency" placeholder="Constituency" required>
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="text" name="party" placeholder="Party">
+            <input type="text" name="symbol" placeholder="Symbol">
+            <input type="text" name="gender" placeholder="Gender">
+            <input type="text" name="criminalcases" placeholder="Criminal Cases">
+            <input type="number" name="age" placeholder="Age" required>
+            <input type="text" name="category" placeholder="Category">
+            <input type="text" name="education" placeholder="Education">
+            <input type="text" name="assests" placeholder="Assets">
+            <input type="text" name="liabilities" placeholder="Liabilities">
+            <label for="f_image">Upload Image:</label>
+            <input type="file" id="f_image" name="f_image" accept="image/jpeg,image/gif,image/png,image/jpg" required>
+            
+            <button type="submit">Add Candidate</button>
+        </form>
+    </div>
+
+    <!-- Update Candidate Form -->
+    <div class="container form-container" id="update-form" method="post">
+        <h2>Update Candidate</h2>
+        <form id="update-candidate-form" enctype="multipart/form-data">
+            <input type="text" id="candidateId" name="candidateId" placeholder="Candidate ID" required>
+            <input type="text" name="state" placeholder="New State">
+            <input type="text" name="constituency" placeholder="New Constituency">
+            <input type="text" name="name" placeholder="New Name">
+            <input type="text" name="party" placeholder="New Party">
+            <input type="text" name="symbol" placeholder="New Symbol">
+            <input type="text" name="gender" placeholder="New Gender">
+            <input type="text" name="criminalcases" placeholder="New Criminal Cases">
+            <input type="number" name="age" placeholder="New Age">
+            <input type="text" name="category" placeholder="New Category">
+            <input type="text" name="education" placeholder="New Education">
+            <input type="text" name="assests" placeholder="New Assets">
+            <input type="text" name="liabilities" placeholder="New Liabilities">
+            <input type="file" id="f_image" name="f_image" accept="image/jpeg,image/gif,image/png,image/jpg" required>
+            <button type="submit">Update Candidate</button>
+        </form>
+    </div>
+
+    <!-- Delete Candidate Form -->
+    <div class="container form-container" id="delete-form">
+        <h2>Delete Candidate</h2>
+        <form id="delete-candidate-form">
+            <input type="text" name="candidateId" placeholder="Candidate ID" required>
+            <button type="submit">Delete Candidate</button>
+        </form>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+
+        function showForm(formId) {
+            document.querySelectorAll('.form-container').forEach(form => form.style.display = 'none');
+            document.getElementById(`${formId}-form`).style.display = 'block';
+        }
+
+        // Handle add candidate form submission
+        document.getElementById('add-candidate-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+
+            try {
+                const response = await fetch('/candidate/addcandidate', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Candidate added successfully');
+                } else {
+                    alert('Failed to add candidate');
+                }
+
+                event.target.reset();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Handle update candidate form submission
+        document.getElementById('update-candidate-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const candidateId = document.getElementById('candidateId').value.trim();
+            if (!candidateId) {
+                alert('Please enter a valid candidate ID.');
+                return;
+            }
+
+            const formData = new FormData(event.target);
+            const updateCandidateUrl = `/candidate/update/${candidateId}`;
+
+            try {
+                const response = await fetch(updateCandidateUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update candidate');
+                }
+
+                alert('Candidate updated successfully');
+                event.target.reset();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to update candidate: ' + error.message);
+            }
+        });
+
+        // Handle delete candidate form submission
+        document.getElementById('delete-candidate-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const candidateId = event.target.candidateId.value.trim();
+            if (!candidateId) {
+                alert('Please enter a valid candidate ID.');
+                return;
+            }
+
+            const deleteCandidateUrl = `/candidate/delete/${candidateId}`;
+
+            try {
+                const response = await fetch(deleteCandidateUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                alert(response.ok ? 'Candidate deleted successfully' : 'Failed to delete candidate');
+                event.target.reset();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logout-button').addEventListener('click', function() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>
